@@ -1,0 +1,850 @@
+{
+  "schema": 2,
+  "dimensions": [
+    "code_quality",
+    "system_design",
+    "testing",
+    "debugging",
+    "security",
+    "git_process",
+    "requirements",
+    "product_judgment",
+    "ai_usage",
+    "learning_velocity"
+  ],
+  "task_kinds": {
+    "metric": "Verified automatically from git/chat metrics by `coach.py verify`. Cannot be self-marked.",
+    "attest": "Done when the developer supplies evidence (commit, PR, file). The coach challenges thin evidence.",
+    "quiz": "Done when the developer passes an in-session check without AI help. Quiz-kind tasks are re-tested on a spaced schedule (+3, +10, +30 days)."
+  },
+  "gaps": {
+    "change-hygiene": {
+      "title": "Change hygiene: small, reviewable, reversible changes",
+      "dimensions": [
+        "git_process",
+        "code_quality"
+      ],
+      "senior_looks_like": "One concern per change. Commits say why. PRs are small enough to review in one sitting and revert without collateral damage. CI is green before 'done'.",
+      "why": "When you are your own reviewer (solo, or leaning on AI), sprawling diffs are where auth and data bugs hide.",
+      "detectors": [
+        {
+          "metric": "git.median_files_per_commit",
+          "op": ">",
+          "value": 12
+        },
+        {
+          "metric": "git.large_commit_pct",
+          "op": ">",
+          "value": 10
+        },
+        {
+          "metric": "git.conventional_pct",
+          "op": "<",
+          "value": 60
+        },
+        {
+          "metric": "git.vague_message_pct",
+          "op": ">",
+          "value": 30
+        }
+      ],
+      "rules": [
+        "commit-files-cap",
+        "commit-message-quality",
+        "push-range-size",
+        "agent-diff-size"
+      ],
+      "success_signals": [
+        {
+          "id": "files",
+          "metric": "git.median_files_per_commit",
+          "op": "<=",
+          "value": 12,
+          "window_days": 30,
+          "min_commits": 10
+        },
+        {
+          "id": "conventional",
+          "metric": "git.conventional_pct",
+          "op": ">=",
+          "value": 60,
+          "window_days": 30,
+          "min_commits": 10
+        }
+      ],
+      "tasks": [
+        {
+          "id": "ch-1",
+          "kind": "quiz",
+          "title": "What vs why in commit messages",
+          "do": "Rewrite your last 10 vague subjects as `type(scope): why`. Then answer: which of your commits could a stranger revert safely, and why?",
+          "technique": "retrieval-quiz"
+        },
+        {
+          "id": "ch-2",
+          "kind": "attest",
+          "title": "Write the split plan for your biggest change",
+          "do": "Take {largest_commit}. Write 3-5 slices, each independently revertable, each with its own test. Paste the plan as evidence.",
+          "technique": "worked-example",
+          "when": [
+            {
+              "metric": "git.large_commit_pct",
+              "op": ">",
+              "value": 5
+            },
+            {
+              "metric": "git.median_files_per_commit",
+              "op": ">",
+              "value": 12
+            }
+          ]
+        },
+        {
+          "id": "ch-3",
+          "kind": "metric",
+          "title": "Land 10 commits that meet the bar",
+          "do": "Ten consecutive commits: conventional format, median files per commit at or under the cap.",
+          "verify": {
+            "metric": "git.conventional_pct",
+            "op": ">=",
+            "value": 60,
+            "min_commits": 10
+          },
+          "technique": "metric-challenge"
+        },
+        {
+          "id": "ch-4",
+          "kind": "attest",
+          "title": "Ship one small, well-described PR",
+          "do": "One PR under ~400 changed lines with what / why / risk / test plan / rollback in the description. Evidence: PR URL or commit range.",
+          "technique": "live-pairing",
+          "when": [
+            {
+              "metric": "git.median_files_per_commit",
+              "op": ">",
+              "value": 8
+            }
+          ]
+        }
+      ],
+      "closes_by": [
+        "rewrite-artifact",
+        "worked-example",
+        "deliberate-kata",
+        "if-then-plan",
+        "metric-challenge"
+      ]
+    },
+    "modular-architecture": {
+      "title": "Modular architecture under growth",
+      "dimensions": [
+        "system_design",
+        "code_quality"
+      ],
+      "senior_looks_like": "Clear boundaries (UI shell / domain service / API / authorization). Hotspots shrink over time. Nobody accepts a multi-thousand-line file as its permanent home.",
+      "why": "God files become untestable, and they are hostile to AI tools too: oversized context produces worse generated code.",
+      "detectors": [
+        {
+          "metric": "git.god_hotspot_count",
+          "op": ">",
+          "value": 0
+        },
+        {
+          "metric": "git.god_file_count",
+          "op": ">=",
+          "value": 2
+        }
+      ],
+      "rules": [
+        "god-file-growth"
+      ],
+      "success_signals": [
+        {
+          "id": "hotspot-shrink",
+          "metric": "plan.top_hotspot_loc_reduction_pct",
+          "op": ">=",
+          "value": 20,
+          "by_day": 60
+        }
+      ],
+      "tasks": [
+        {
+          "id": "ma-1",
+          "kind": "quiz",
+          "title": "Deep vs shallow modules, applied to your code",
+          "do": "For {god_file_1}: list its distinct responsibilities, then sketch the module map you would draw if it were new. Quiz: why does a thin interface over deep logic beat many tiny pass-through functions?",
+          "technique": "retrieval-quiz"
+        },
+        {
+          "id": "ma-2",
+          "kind": "attest",
+          "title": "Pin behavior before you split",
+          "do": "Write characterization tests around the part of {god_file_1} you will extract. Evidence: test file + passing run.",
+          "technique": "guided-refactor",
+          "when": [
+            {
+              "metric": "git.god_file_count",
+              "op": ">",
+              "value": 0
+            }
+          ]
+        },
+        {
+          "id": "ma-3",
+          "kind": "attest",
+          "title": "Extract one module, no behavior change",
+          "do": "One PR that only moves code out of {god_file_1}. Evidence: PR/commit range showing tests unchanged and green.",
+          "technique": "guided-refactor",
+          "when": [
+            {
+              "metric": "git.god_file_count",
+              "op": ">",
+              "value": 0
+            }
+          ]
+        },
+        {
+          "id": "ma-4",
+          "kind": "metric",
+          "title": "Make the hotspot measurably smaller",
+          "do": "Top baseline god files lose at least 20% of their lines (or are split).",
+          "verify": {
+            "metric": "plan.top_hotspot_loc_reduction_pct",
+            "op": ">=",
+            "value": 20
+          },
+          "technique": "metric-challenge",
+          "when": [
+            {
+              "metric": "git.god_file_count",
+              "op": ">",
+              "value": 0
+            }
+          ]
+        }
+      ],
+      "closes_by": [
+        "guided-refactor",
+        "design-note",
+        "worked-example",
+        "metric-challenge"
+      ]
+    },
+    "test-as-gate": {
+      "title": "Tests as a gate, not an afterthought",
+      "dimensions": [
+        "testing",
+        "git_process"
+      ],
+      "senior_looks_like": "The riskiest paths are tested in the same change that touches them. A red CI blocks the merge; it is not 'informative'.",
+      "why": "In multi-tenant or money-handling software, the expensive bugs are wrong-scope and wrong-permission bugs, which tests catch cheaply.",
+      "detectors": [
+        {
+          "metric": "git.test_colocation_pct",
+          "op": "<",
+          "value": 60
+        },
+        {
+          "metric": "git.test_path_touch_pct",
+          "op": "<",
+          "value": 10
+        }
+      ],
+      "rules": [
+        "risky-without-test",
+        "src-without-test"
+      ],
+      "success_signals": [
+        {
+          "id": "colocation",
+          "metric": "git.test_colocation_pct",
+          "op": ">=",
+          "value": 70,
+          "window_days": 30,
+          "min_commits": 10
+        }
+      ],
+      "tasks": [
+        {
+          "id": "tg-1",
+          "kind": "quiz",
+          "title": "Risk-based test selection",
+          "do": "For a typical new API route define the minimum trio: permission denied, happy path, wrong-scope (other tenant/org) miss. Quiz: which of the three catches the most expensive bug, and why?",
+          "technique": "retrieval-quiz"
+        },
+        {
+          "id": "tg-2",
+          "kind": "attest",
+          "title": "Write the trio for one existing route",
+          "do": "Pick {risky_path_1} (or another risky route). Add the three tests. Evidence: commit hash.",
+          "technique": "worked-example"
+        },
+        {
+          "id": "tg-3",
+          "kind": "metric",
+          "title": "Ten source commits, tests alongside",
+          "do": "At least 70% of your next 10+ source-touching commits include test changes.",
+          "verify": {
+            "metric": "git.test_colocation_pct",
+            "op": ">=",
+            "value": 70,
+            "min_commits": 10
+          },
+          "technique": "metric-challenge"
+        },
+        {
+          "id": "tg-4",
+          "kind": "attest",
+          "title": "Make test prerequisites fail fast",
+          "do": "Browsers/fixtures/env needed by e2e tests are checked up front (script, CI step or onboarding doc). Evidence: the change.",
+          "technique": "pre-mortem",
+          "when": [
+            {
+              "metric": "git.test_path_touch_pct",
+              "op": "<",
+              "value": 10
+            }
+          ]
+        }
+      ],
+      "closes_by": [
+        "worked-example",
+        "review-drill",
+        "deliberate-kata",
+        "metric-challenge"
+      ]
+    },
+    "ai-ownership": {
+      "title": "Owning AI-generated changes",
+      "dimensions": [
+        "ai_usage",
+        "requirements"
+      ],
+      "senior_looks_like": "AI proposes, you decide. You can delete 30% of an AI diff and the feature still works. Every AI change gets the review you would give a new junior's PR.",
+      "why": "High AI throughput without ownership turns you into a prompt operator and multiplies debt in places you cannot explain.",
+      "detectors": [
+        {
+          "metric": "git.agent_share_pct",
+          "op": ">",
+          "value": 25
+        },
+        {
+          "metric": "git.fix_after_ship_pct",
+          "op": ">",
+          "value": 15
+        },
+        {
+          "metric": "chat.verification_pct",
+          "op": "<",
+          "value": 8
+        }
+      ],
+      "rules": [
+        "prompt-contract",
+        "agent-diff-size",
+        "blast-radius-note"
+      ],
+      "success_signals": [
+        {
+          "id": "blast-notes",
+          "metric": "ledger.blast_notes",
+          "op": ">=",
+          "value": 5,
+          "by_day": 60
+        },
+        {
+          "id": "agent-diff",
+          "metric": "git.median_files_per_commit",
+          "op": "<=",
+          "value": 12,
+          "window_days": 30,
+          "min_commits": 10
+        }
+      ],
+      "tasks": [
+        {
+          "id": "ao-1",
+          "kind": "attest",
+          "title": "Write a prompt contract",
+          "do": "For your next AI task write: goal, non-goals, allowed files, forbidden files, acceptance criteria, required tests, max scope. Evidence: the prompt text.",
+          "technique": "rewrite-artifact"
+        },
+        {
+          "id": "ao-2",
+          "kind": "attest",
+          "title": "Blast-radius note for a past AI change",
+          "do": "Pick a recent AI-heavy PR. Write 5 bullets: callers, auth, data, UI, rollback. Log with `coach.py note --kind blast-radius`.",
+          "technique": "pre-mortem"
+        },
+        {
+          "id": "ao-3",
+          "kind": "metric",
+          "title": "Five AI changes, five notes",
+          "do": "Log a blast-radius note before merging each of five AI-assisted changes.",
+          "verify": {
+            "metric": "ledger.blast_notes",
+            "op": ">=",
+            "value": 5
+          },
+          "technique": "metric-challenge"
+        },
+        {
+          "id": "ao-4",
+          "kind": "quiz",
+          "title": "Explain it without the chat",
+          "do": "The coach picks a large AI-authored change from your history. Explain end to end, with no AI open: what it does, where it can break, how you would roll it back.",
+          "technique": "explain-back"
+        },
+        {
+          "id": "ao-5",
+          "kind": "attest",
+          "title": "Four no-agent weeks (small fix each)",
+          "do": "Once a week implement one small fix without generation tools. Evidence: four commit hashes.",
+          "technique": "deliberate-kata",
+          "when": [
+            {
+              "metric": "git.agent_share_pct",
+              "op": ">",
+              "value": 25
+            }
+          ]
+        }
+      ],
+      "closes_by": [
+        "explain-back",
+        "review-drill",
+        "rewrite-artifact",
+        "if-then-plan",
+        "metric-challenge"
+      ]
+    },
+    "operational-predictability": {
+      "title": "Operational predictability",
+      "dimensions": [
+        "git_process",
+        "testing"
+      ],
+      "senior_looks_like": "Known failure classes are prevented by checklists and CI contracts, not remembered. 'Merged' is not 'done' until the user path is smoke-tested.",
+      "why": "Repeat failures (broken CI prerequisites, merged-but-wrong features, reverts) are process bugs, not bad luck.",
+      "detectors": [
+        {
+          "metric": "git.fix_after_ship_pct",
+          "op": ">",
+          "value": 15
+        },
+        {
+          "metric": "git.revert_count",
+          "op": ">=",
+          "value": 3
+        }
+      ],
+      "rules": [
+        "push-range-size"
+      ],
+      "success_signals": [
+        {
+          "id": "fix-after-ship",
+          "metric": "git.fix_after_ship_pct",
+          "op": "<=",
+          "value": 12,
+          "window_days": 60,
+          "min_commits": 15
+        }
+      ],
+      "tasks": [
+        {
+          "id": "op-1",
+          "kind": "quiz",
+          "title": "Turn incidents into checklist items",
+          "do": "List your last 5 'that should not have happened' moments. For each: the class of failure and the one-line check that would have prevented it.",
+          "technique": "pre-mortem"
+        },
+        {
+          "id": "op-2",
+          "kind": "metric",
+          "title": "Install the hooks and CI backstop",
+          "do": "Run `coach.py install-hooks` and add the GitHub Action from integrations/.",
+          "verify": {
+            "metric": "env.hooks_installed",
+            "op": ">=",
+            "value": 1
+          },
+          "technique": "metric-challenge"
+        },
+        {
+          "id": "op-3",
+          "kind": "metric",
+          "title": "PR template with the checklist",
+          "do": "Add .github/pull_request_template.md covering permissions, org scope, tests, schema/migrations, secrets, UI smoke path.",
+          "verify": {
+            "metric": "env.pr_template",
+            "op": ">=",
+            "value": 1
+          },
+          "technique": "metric-challenge"
+        },
+        {
+          "id": "op-4",
+          "kind": "attest",
+          "title": "Smoke the user path on three features",
+          "do": "For three features, write the smoke path in the PR and tick it after merge. Evidence: 3 PR links.",
+          "technique": "if-then-plan",
+          "when": [
+            {
+              "metric": "git.fix_after_ship_pct",
+              "op": ">",
+              "value": 10
+            }
+          ]
+        }
+      ],
+      "closes_by": [
+        "pre-mortem",
+        "if-then-plan",
+        "metric-challenge"
+      ]
+    },
+    "security-hygiene": {
+      "title": "Security and data-handling hygiene",
+      "dimensions": [
+        "security",
+        "testing"
+      ],
+      "senior_looks_like": "Secrets never land in history. Every authorization-relevant change ships with deny and scope tests. Policy is audited, not assumed.",
+      "why": "Intent without process still leaks: secrets in history and untested permission paths are the usual failures.",
+      "detectors": [
+        {
+          "metric": "git.secret_signal_count",
+          "op": ">",
+          "value": 0
+        },
+        {
+          "metric": "git.risky_without_test_pct",
+          "op": ">",
+          "value": 40
+        }
+      ],
+      "rules": [
+        "secret-in-diff",
+        "risky-without-test"
+      ],
+      "success_signals": [
+        {
+          "id": "no-secrets",
+          "metric": "git.secret_signal_count",
+          "op": "<=",
+          "value": 0,
+          "window_days": 90
+        },
+        {
+          "id": "risky-tested",
+          "metric": "git.risky_without_test_pct",
+          "op": "<=",
+          "value": 20,
+          "window_days": 60,
+          "min_commits": 5
+        }
+      ],
+      "tasks": [
+        {
+          "id": "sh-1",
+          "kind": "quiz",
+          "title": "Threat-model one route",
+          "do": "Pick {risky_path_1}. Who can call it, what can they reach, what if the tenant/org id is forged? Quiz on three abuse cases.",
+          "technique": "review-drill"
+        },
+        {
+          "id": "sh-2",
+          "kind": "attest",
+          "title": "Rotate, scan, prevent",
+          "do": "Rotate anything that ever leaked. Enable the pre-commit scan (coach hooks or a dedicated scanner). Evidence: config commit.",
+          "technique": "live-pairing",
+          "when": [
+            {
+              "metric": "git.secret_signal_count",
+              "op": ">",
+              "value": 0
+            }
+          ]
+        },
+        {
+          "id": "sh-3",
+          "kind": "metric",
+          "title": "Risky changes ship with tests",
+          "do": "Five+ commits touching auth/permission/tenant/billing paths, at least 80% with tests.",
+          "verify": {
+            "metric": "git.risky_without_test_pct",
+            "op": "<=",
+            "value": 20,
+            "min_commits": 5
+          },
+          "technique": "metric-challenge"
+        },
+        {
+          "id": "sh-4",
+          "kind": "attest",
+          "title": "Monthly audit of 10 routes",
+          "do": "Audit 10 routes against your own authorization rules. Evidence: the checklist with findings.",
+          "technique": "review-drill"
+        }
+      ],
+      "closes_by": [
+        "review-drill",
+        "worked-example",
+        "pre-mortem",
+        "metric-challenge"
+      ]
+    },
+    "debugging-method": {
+      "title": "Hypothesis-driven debugging",
+      "dimensions": [
+        "debugging",
+        "testing"
+      ],
+      "senior_looks_like": "Observe, hypothesize, predict, test, record. Every fix leaves behind a regression test and a root-cause sentence.",
+      "why": "Fix-after-fix chains and pasted errors without a hypothesis mean the cause was never isolated.",
+      "detectors": [
+        {
+          "metric": "git.fix_without_test_pct",
+          "op": ">",
+          "value": 50
+        },
+        {
+          "metric": "chat.error_paste_no_hypothesis_pct",
+          "op": ">",
+          "value": 50
+        },
+        {
+          "metric": "git.fix_after_ship_pct",
+          "op": ">",
+          "value": 15
+        }
+      ],
+      "rules": [
+        "fix-without-test"
+      ],
+      "success_signals": [
+        {
+          "id": "fixes-tested",
+          "metric": "git.fix_without_test_pct",
+          "op": "<=",
+          "value": 20,
+          "window_days": 60,
+          "min_commits": 5
+        }
+      ],
+      "tasks": [
+        {
+          "id": "dm-1",
+          "kind": "quiz",
+          "title": "The hypothesis loop",
+          "do": "Given a bug report the coach provides, produce ranked hypotheses and the cheapest experiment for each before touching code.",
+          "technique": "debug-lab"
+        },
+        {
+          "id": "dm-2",
+          "kind": "attest",
+          "title": "Debug log for the next three bugs",
+          "do": "Symptom, ranked hypotheses, experiment, root cause, regression test. Evidence: three logs.",
+          "technique": "deliberate-kata"
+        },
+        {
+          "id": "dm-3",
+          "kind": "metric",
+          "title": "Every fix ships a regression test",
+          "do": "Five+ fix commits, at least 80% with tests.",
+          "verify": {
+            "metric": "git.fix_without_test_pct",
+            "op": "<=",
+            "value": 20,
+            "min_commits": 5
+          },
+          "technique": "metric-challenge"
+        },
+        {
+          "id": "dm-4",
+          "kind": "attest",
+          "title": "Five whys on a fix-after-fix chain",
+          "do": "Take a chain where a fix needed a follow-up fix. Trace to the process cause. Evidence: written analysis.",
+          "technique": "pre-mortem",
+          "when": [
+            {
+              "metric": "git.fix_after_ship_pct",
+              "op": ">",
+              "value": 15
+            }
+          ]
+        }
+      ],
+      "closes_by": [
+        "debug-lab",
+        "deliberate-kata",
+        "pre-mortem",
+        "metric-challenge"
+      ]
+    },
+    "requirements-clarity": {
+      "title": "Requirements and prompt clarity",
+      "dimensions": [
+        "requirements",
+        "ai_usage"
+      ],
+      "senior_looks_like": "Work starts from constraints, non-goals and acceptance criteria, so anyone (human or AI) can tell when it is done.",
+      "why": "Vague asks produce broad diffs and fix-after-ship loops.",
+      "detectors": [
+        {
+          "metric": "chat.vague_prompt_pct",
+          "op": ">",
+          "value": 35
+        },
+        {
+          "metric": "chat.constraint_pct",
+          "op": "<",
+          "value": 35
+        }
+      ],
+      "rules": [
+        "prompt-contract"
+      ],
+      "success_signals": [
+        {
+          "id": "constraints",
+          "metric": "chat.constraint_pct",
+          "op": ">=",
+          "value": 60,
+          "window_days": 30,
+          "min_commits": 10
+        }
+      ],
+      "tasks": [
+        {
+          "id": "rc-1",
+          "kind": "quiz",
+          "title": "Acceptance criteria and non-goals",
+          "do": "Turn a one-line feature wish from your backlog into Given/When/Then plus explicit non-goals.",
+          "technique": "retrieval-quiz"
+        },
+        {
+          "id": "rc-2",
+          "kind": "attest",
+          "title": "Rewrite three vague prompts",
+          "do": "Take three vague prompts from your chat sample and rewrite them as contracts. Evidence: before/after.",
+          "technique": "rewrite-artifact",
+          "when": [
+            {
+              "metric": "chat.vague_prompt_pct",
+              "op": ">",
+              "value": 20
+            }
+          ]
+        },
+        {
+          "id": "rc-3",
+          "kind": "metric",
+          "title": "Ten prompts with constraints",
+          "do": "Re-run `coach.py verify --chat PATH` after ten new substantial prompts.",
+          "verify": {
+            "metric": "chat.constraint_pct",
+            "op": ">=",
+            "value": 60,
+            "min_commits": 10
+          },
+          "technique": "metric-challenge",
+          "when": [
+            {
+              "metric": "chat.constraint_pct",
+              "op": ">=",
+              "value": 0
+            }
+          ]
+        }
+      ],
+      "closes_by": [
+        "rewrite-artifact",
+        "retrieval-quiz",
+        "deliberate-kata",
+        "metric-challenge"
+      ]
+    }
+  },
+  "techniques": {
+    "retrieval-quiz": {
+      "name": "Retrieval quiz",
+      "fits": "Concepts and judgment calls the developer must apply from memory",
+      "kind": "quiz",
+      "spaced": true
+    },
+    "worked-example": {
+      "name": "Worked example, then faded",
+      "fits": "A skill the developer has not done before; agent demonstrates on a different case, developer does their own",
+      "kind": "attest",
+      "spaced": false
+    },
+    "guided-refactor": {
+      "name": "Guided refactor on your own code",
+      "fits": "Structure and architecture gaps; developer drives, agent navigates and asks questions",
+      "kind": "attest",
+      "spaced": false
+    },
+    "deliberate-kata": {
+      "name": "Deliberate-practice kata",
+      "fits": "Small repeatable habits (messages, tests, fixes); repeat 3x with feedback each round",
+      "kind": "attest",
+      "spaced": true
+    },
+    "review-drill": {
+      "name": "Seeded-flaw review drill",
+      "fits": "Spotting risk in diffs, routes or plans; agent plants or selects flaws, developer finds them",
+      "kind": "quiz",
+      "spaced": true
+    },
+    "debug-lab": {
+      "name": "Debugging lab",
+      "fits": "Hypothesis-driven debugging; agent provides a bug case, developer runs the loop",
+      "kind": "quiz",
+      "spaced": true
+    },
+    "explain-back": {
+      "name": "Explain-back",
+      "fits": "Ownership of AI-written or old code; developer explains it with no AI open, graded on a rubric",
+      "kind": "quiz",
+      "spaced": true
+    },
+    "pre-mortem": {
+      "name": "Pre-mortem and checklist building",
+      "fits": "Process and reliability gaps; turn likely failures into checks",
+      "kind": "attest",
+      "spaced": false
+    },
+    "if-then-plan": {
+      "name": "If-then plan tied to a live trigger",
+      "fits": "Habit gaps; developer writes 'when X happens I do Y', hooks supply the trigger",
+      "kind": "attest",
+      "spaced": false
+    },
+    "rewrite-artifact": {
+      "name": "Before/after rewrite of your own artifact",
+      "fits": "Communication gaps in commits, prompts, tickets, PR text",
+      "kind": "attest",
+      "spaced": false
+    },
+    "design-note": {
+      "name": "Short design note (ADR)",
+      "fits": "Boundary and trade-off decisions; one page: context, options, decision, consequences",
+      "kind": "attest",
+      "spaced": false
+    },
+    "live-pairing": {
+      "name": "Live pairing on a real backlog item",
+      "fits": "Applying a skill under real constraints; agent enforces the constraints during the work",
+      "kind": "attest",
+      "spaced": false
+    },
+    "metric-challenge": {
+      "name": "Metric challenge",
+      "fits": "Behavior change that git or chat can measure; verified automatically",
+      "kind": "metric",
+      "spaced": false
+    }
+  }
+}

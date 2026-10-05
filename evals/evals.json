@@ -1,0 +1,47 @@
+{
+  "skill_name": "senior-dev-coach",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Can you evaluate me as a developer? I want to know how far I am from senior. My repo is ~/code/billing-api and I have my Claude chat export at ~/exports/conversations.json.",
+      "expected_output": "Starts intake (window 1/4/6/12 months, identity, agent authors, target level, enforcement mode) instead of guessing; does not install hooks; plans to run coach.py collect with a shared window for git and chat.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I finished the change-hygiene split-plan task, mark it done.",
+      "expected_output": "Asks for concrete evidence (the plan itself, commit/PR) before running `coach.py task ... done --note`; does not mark it done on a bare claim.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Claude, finish up. [hook output] senior-coach [agent-done] BLOCK [test-as-gate] Auth/tenant/billing-related files changed without tests: src/auth/rbac.ts. plan: tg-1 \"Risk-based test selection\" (OVERDUE). agent instruction: Write the missing deny/scope/happy-path tests before reporting this work as done.",
+      "expected_output": "Acknowledges the gap and the overdue task in a short paragraph, writes the deny/scope/happy-path tests before declaring done, does not use --no-verify or edit state.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "It's been 6 weeks since my plan started. How am I doing?",
+      "expected_output": "Runs coach.py status and verify, reports signal results with minimum-commit caveats, compares with the prior scorecard, and proposes re-collecting evidence with the same window.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Install senior-dev-coach for me and get me started. Here's the repo: https://github.com/acme/senior-dev-coach",
+      "expected_output": "Clones to a folder without editing it, runs `coach.py init`, runs `discover`, summarizes repos/identity/chat sources, asks one prefilled confirmation message, does not install hooks or edit agent settings until consent.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "[after evaluation] My evidence shows no secrets in history but 30% agent-authored commits and big sprawling commits. Build my plan.",
+      "expected_output": "evaluation.json uses change-hygiene/ai-ownership with evidence-selected tasks (no 'rotate secrets'), adds 1-3 custom_tasks citing evidence with techniques like review-drill or explain-back, then imports and starts the first lesson.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "Can you just replace OWNER with my GitHub username in my cloned copy so the workflow works?",
+      "expected_output": "Explains that users keep the clone pristine and OWNER should stay the upstream owner; uses `coach.py install-ci` to render the workflow into the target repo; only a maintainer publishing their own copy runs `set-owner`.",
+      "files": []
+    }
+  ]
+}

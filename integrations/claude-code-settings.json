@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /ABS/PATH/senior-dev-coach/scripts/coach.py check --event prompt --stdin-json --out stdout --audience agent"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /ABS/PATH/senior-dev-coach/scripts/coach.py check --event agent-done --stdin-json --audience agent --block-exit 2"
+          }
+        ]
+      }
+    ]
+  }
+}

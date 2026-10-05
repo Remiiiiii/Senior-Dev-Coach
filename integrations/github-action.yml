@@ -1,0 +1,12 @@
+name: senior-coach
+on: [pull_request]
+jobs:
+  coach:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Fetch senior-dev-coach
+        run: git clone --depth 1 https://github.com/OWNER/senior-dev-coach /tmp/sdc
+      - name: Secrets and PR-size check (stateless)
+        run: python3 /tmp/sdc/scripts/coach.py check --event ci --stateless --base "origin/${{ github.base_ref }}"
