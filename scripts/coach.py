@@ -954,9 +954,13 @@ def cmd_init(a):
     (HOME / "install.json").write_text(json.dumps({"skill_root": str(ROOT), "shim": str(shim), "agents": installed,
                                                     "installed_at": NOW().isoformat(timespec="seconds")}, indent=2))
     print(f"Shim: {shim}  (add {shim.parent} to PATH to type `senior-coach ...`)")
+    phrase = ROOT / "references" / "phrase-book.md"
+    print(f"Phrase book (what to say to your agent): {phrase}")
+    print("  Ask your agent: \"show me the phrase book\" or \"what can I ask you?\" anytime.")
     if "claude-code" in chosen:
         print("Note: personal Claude Code skills do not load in Cowork or cloud sessions. Start a new Claude Code session to pick the skill up.")
     print("Next: open your agent and say: Evaluate me as a developer.  (It will run `discover` and confirm what it finds with you.)")
+    print("Then say: What's next?  (or: next lesson / next chapter) -- see the phrase book for more.")
 
 
 def _git_authors(repo, since="12.months"):

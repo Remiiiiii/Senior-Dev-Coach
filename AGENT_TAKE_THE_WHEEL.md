@@ -24,7 +24,8 @@ instructions; make no change to hooks, agent settings or any repo without my exp
 6. CONSENT. ASK separately for each: git hooks per repo; agent hooks (coach.py integrate --agent <mine>);
    CI backstop (install-ci adds a file to a repo; skip job repos unless I say so). Do none until I say yes.
 7. START. Run `coach.py next` and begin my first lesson now.
-Finish with: what was installed, where my data lives (~/.senior-coach), and how to undo each step.
+Finish with: what was installed, where my data lives (~/.senior-coach), how to undo each step, and point me at
+references/phrase-book.md (what I can say next: "what's next", status, verify, hooks, etc.).
 ```
 
 ## Publishing your own copy (maintainer only, once)

@@ -17,12 +17,13 @@ All commands: `python3 <skill-dir>/scripts/coach.py ...` (called `coach.py` belo
 | Situation | Go to |
 |---|---|
 | User wants to install/set up the skill | `AGENT_TAKE_THE_WHEEL.md` (the install flow), then continue below |
+| User asks what they can say / "phrase book" / "commands" / "how do I…" | Open `references/phrase-book.md`, answer from it, offer the matching action |
 | No `~/.senior-coach/state.json`, or user asks for a (new) evaluation | 1 Intake -> 2 Collect -> 3 Evaluate -> 4 Plan |
-| Plan exists, user wants to work/learn/"what's next" | 5 Run modules |
+| Plan exists, user wants to work/learn/"what's next"/"next lesson"/"next chapter" | 5 Run modules |
 | A `senior-coach` finding appears (hook output, agent instruction) | 6 Accountability protocol |
 | User asks for progress, or 30/60/90 days passed | 7 Verify and re-evaluate |
 
-Run `coach.py status` first when unsure; it shows whether a plan exists.
+Run `coach.py status` first when unsure; it shows whether a plan exists. Natural-language phrases map to actions in `references/phrase-book.md` — treat that as the user-facing index.
 
 ## 1. Intake (discover first, then confirm; do not interrogate)
 
@@ -85,6 +86,7 @@ coach.py report                                                              # s
 1. **Show the result**: run `coach.py report` and walk the developer through the verdict, top gaps and why, in plain language. Point to the saved full report.
 2. **Ask consent for hooks**, per repo, and explain what each does: git hooks (`coach.py install-hooks --repo PATH`), agent hooks (`coach.py integrate --agent claude-code`, or `--agent cursor|agents-md --repo PATH`; kept out of git), CI backstop (`coach.py install-ci --repo PATH`, which adds a file to the repo: get team buy-in in work repos). Warn that `--no-verify` bypasses git hooks and that employer tooling (husky etc.) is left untouched. Do nothing without a yes.
 3. **Start the first lesson in the same session**: `coach.py next`, then run it per step 5. Do not end on a plan nobody has started.
+4. **Point them at the phrase book**: tell them `references/phrase-book.md` lists what they can say next time (*what's next*, *status*, *verify*, hooks, etc.). After `init`, the CLI already printed its path.
 
 ## 5. Run modules (the LMS loop)
 

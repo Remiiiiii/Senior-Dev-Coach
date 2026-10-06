@@ -14,7 +14,7 @@ About 5 minutes. Want your AI agent to do it for you? Use [AGENT_TAKE_THE_WHEEL.
    ```bash
    python3 ~/senior-dev-coach/scripts/coach.py init        # auto-detects; or --agent claude-code|cursor|codex|gemini
    ```
-   Start a new agent session so it picks the skill up.
+   `init` prints the path to the **phrase book** (`references/phrase-book.md`) — what you can say to the agent (*what's next*, *status*, *verify*, …). Start a new agent session so it picks the skill up.
 3. **Run the evaluation.** In your agent, say: *"Evaluate me as a developer."* It runs a read-only `discover` (repos, git identities, chat exports), then asks you to confirm the window (1, 4, 6 or 12 months), repos, identity and chat history, scores you, and saves the report.
 4. **View the result.** Ask your agent, or run `~/.senior-coach/bin/senior-coach report`.
 5. **Turn on live accountability, repo by repo, only if you want it.** Your agent will ask. Manual equivalents:
@@ -23,7 +23,7 @@ About 5 minutes. Want your AI agent to do it for you? Use [AGENT_TAKE_THE_WHEEL.
    senior-coach integrate --agent claude-code            # agent hooks (or: --agent cursor --repo PATH)
    senior-coach install-ci --repo ~/code/app             # optional CI backstop (adds a file to the repo)
    ```
-6. **Learn.** Say "next lesson" to your agent (or `senior-coach next`). At about 30/60/90 days run `senior-coach verify` and re-evaluate with the same window.
+6. **Learn.** Say *"next lesson"* / *"what's next"* / *"next chapter"* to your agent (or `senior-coach next`). Full phrase list: [references/phrase-book.md](references/phrase-book.md). At about 30/60/90 days run `senior-coach verify` and re-evaluate with the same window.
 
 **Update:** `git -C ~/senior-dev-coach pull`. **Moved the clone?** run `init --relink` from the new location. **Remove:** delete the `senior-dev-coach` link in your agent's skills folder, the hooks (`commit-msg`, `pre-commit`, `pre-push` in `.git/hooks`; restore any `*.pre-senior-coach` file), and `~/.senior-coach`.
 
