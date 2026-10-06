@@ -1,0 +1,11 @@
+# Every change needs a code-owner review. Trust-critical paths are listed explicitly
+# so they stay owned if the default rule is ever relaxed.
+*                   @Remiiiiii
+/SKILL.md           @Remiiiiii
+/scripts/           @Remiiiiii
+/integrations/      @Remiiiiii
+/prompts/           @Remiiiiii
+/references/        @Remiiiiii
+/evals/             @Remiiiiii
+/.github/           @Remiiiiii
+/SECURITY.md        @Remiiiiii
