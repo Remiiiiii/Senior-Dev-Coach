@@ -1,8 +1,6 @@
 <div align="center">
 
-# Senior Dev Coach
-
-**Evidence-based growth for software engineers: an agent skill that evaluates your real work, teaches from it, and keeps you accountable.**
+![Senior Dev Coach — Evaluate. Learn. Ship better.](banner.svg)
 
 [![CI](https://github.com/Remiiiiii/Senior-Dev-Coach/actions/workflows/ci.yml/badge.svg)](https://github.com/Remiiiiii/Senior-Dev-Coach/actions/workflows/ci.yml)
 [![Security](https://github.com/Remiiiiii/Senior-Dev-Coach/actions/workflows/security.yml/badge.svg)](https://github.com/Remiiiiii/Senior-Dev-Coach/actions/workflows/security.yml)
