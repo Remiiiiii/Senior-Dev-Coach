@@ -8,7 +8,7 @@
 ![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-3776AB.svg)
 ![Dependencies: 0](https://img.shields.io/badge/dependencies-0-brightgreen.svg)
 
-[Install](INSTALL.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
+[Install](INSTALL.md) · [Phrase book](references/phrase-book.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
 
 </div>
 
@@ -31,9 +31,10 @@ Full steps: [INSTALL.md](INSTALL.md). Let your agent do it: [AGENT_TAKE_THE_WHEE
 git clone https://github.com/Remiiiiii/Senior-Dev-Coach ~/senior-dev-coach      # a template: never edit it
 python3 ~/senior-dev-coach/scripts/coach.py init                              # links it into your agent; creates a stable shim
 # then tell your agent: "Evaluate me as a developer"
+# init also prints the phrase book path (what to say next)
 ```
 
-The clone stays pristine. Everything personal (evaluation, plan, progress, reports, hook settings) lives in `~/.senior-coach/` on your machine, so `git pull` updates the template without touching your progress.
+The clone stays pristine. Everything personal (evaluation, plan, progress, reports, hook settings) lives in `~/.senior-coach/` on your machine, so `git pull` updates the template without touching your progress. Everyday phrases (*what's next*, *status*, *verify*, …): [references/phrase-book.md](references/phrase-book.md).
 
 ## The journey
 
@@ -48,7 +49,7 @@ The clone stays pristine. Everything personal (evaluation, plan, progress, repor
 
 | Piece | Where | Deterministic? |
 |---|---|---|
-| Intake, scoring, report, teaching | `SKILL.md`, `references/rubric.md`, `report-template.md`, `module-spec.md`, `techniques.md` | No: the agent's judgment, with evidence rules |
+| Intake, scoring, report, teaching | `SKILL.md`, `references/rubric.md`, `report-template.md`, `module-spec.md`, `techniques.md`, `phrase-book.md` | No: the agent's judgment, with evidence rules |
 | Git metrics (files/commit, message quality, test colocation, hotspots, god files, fix-after-ship, secrets, PR sizes) | `scripts/gitmetrics.py` | Yes |
 | Chat metrics + redacted sample (Claude.ai, ChatGPT, JSONL, markdown) | `scripts/chatmetrics.py` | Yes (keyword heuristics; the agent reads the sample) |
 | Gap library: detectors, techniques, evidence-gated tasks, success signals | `references/gap-library.json` | Yes |
