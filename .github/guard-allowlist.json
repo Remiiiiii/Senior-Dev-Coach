@@ -1,0 +1,8 @@
+[
+  {
+    "rule": "secret",
+    "path": "tests/test_pipeline.py",
+    "contains": "aws-key",
+    "reason": "synthetic fake AWS key fixture used to test the secret detector"
+  }
+]

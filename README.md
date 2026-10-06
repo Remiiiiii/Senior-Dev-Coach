@@ -1,4 +1,20 @@
-# senior-dev-coach
+<div align="center">
+
+# Senior Dev Coach
+
+**Evidence-based growth for software engineers: an agent skill that evaluates your real work, teaches from it, and keeps you accountable.**
+
+[![CI](https://github.com/Remiiiiii/Senior-Dev-Coach/actions/workflows/ci.yml/badge.svg)](https://github.com/Remiiiiii/Senior-Dev-Coach/actions/workflows/ci.yml)
+[![Security](https://github.com/Remiiiiii/Senior-Dev-Coach/actions/workflows/security.yml/badge.svg)](https://github.com/Remiiiiii/Senior-Dev-Coach/actions/workflows/security.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-3776AB.svg)
+![Dependencies: 0](https://img.shields.io/badge/dependencies-0-brightgreen.svg)
+
+[Install](INSTALL.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
+
+</div>
+
+---
 
 An agent skill that works like a small LMS for becoming a senior developer.
 
@@ -14,7 +30,7 @@ Works as a skill in Claude Code, Cursor (2.4+), Codex CLI and Gemini CLI (all re
 Full steps: [INSTALL.md](INSTALL.md). Let your agent do it: [AGENT_TAKE_THE_WHEEL.md](AGENT_TAKE_THE_WHEEL.md).
 
 ```bash
-git clone https://github.com/OWNER/senior-dev-coach ~/senior-dev-coach      # a template: never edit it
+git clone https://github.com/Remiiiiii/Senior-Dev-Coach ~/senior-dev-coach      # a template: never edit it
 python3 ~/senior-dev-coach/scripts/coach.py init                              # links it into your agent; creates a stable shim
 # then tell your agent: "Evaluate me as a developer"
 ```
@@ -41,6 +57,18 @@ The clone stays pristine. Everything personal (evaluation, plan, progress, repor
 | Install, discovery, plan state, progress, spaced reviews, verification, ledger | `scripts/coach.py` -> `~/.senior-coach/` | Yes |
 | Live accountability | `coach.py check` + `integrations/` | Yes |
 
+## Security by design
+
+Because the skill is text an agent follows plus scripts that run locally, every pull request is treated as a potential supply-chain attack.
+
+- **Zero runtime dependencies, no network access, local-only data.**
+- **Trust boundary:** repo files, commit messages and chat history are data, never instructions (see `SKILL.md`).
+- **Integrity guard** (`.github/scripts/guard.py`) blocks invisible Unicode, prompt-injection phrasing, `eval`/`exec`, network and shell-execution primitives, download-and-run, dependency manifests, symlinks, binaries and credential formats. In CI it runs from the **base branch**, so a PR cannot weaken the rules that judge it.
+- **Hardened pipeline:** least-privilege tokens, no `pull_request_target`, actions pinned to commit SHAs, CodeQL, dependency review, Dependabot.
+- **Governance:** CODEOWNERS on all trust-critical paths, signed commits, immutable release tags.
+
+Details and threat model: [SECURITY.md](SECURITY.md). Maintainer checklist: [docs/REPOSITORY_SETTINGS.md](docs/REPOSITORY_SETTINGS.md).
+
 ## Privacy
 
 Everything runs locally. Chat exports are parsed on your machine, secrets/emails/tokens/IPs/home paths are redacted, and only short excerpts reach the report. Secret scans report `{commit, file, kind}`, never the value. State is stored in `~/.senior-coach`, not in your repos. Only commits matching *your* identity are scored. Reports can still contain file paths and commit subjects: review before sharing.
@@ -56,8 +84,9 @@ Everything runs locally. Chat exports are parsed on your machine, secrets/emails
 ## Develop
 
 ```bash
-python3 tests/test_pipeline.py     # builds a synthetic repo + chat export and exercises the whole flow
+python3 -m unittest discover -s tests   # end-to-end pipeline + integrity guard tests
+python3 -I .github/scripts/guard.py     # the same checks CI runs
 ```
-To add a gap, rule or parser, use the prompt in `prompts/extend.md`. Suggested GitHub topics: `agent-skills`, `claude-code`, `developer-growth`, `engineering-metrics`, `git-hooks`.
+See [CONTRIBUTING.md](CONTRIBUTING.md). To add a gap, rule or parser, use the prompt in `prompts/extend.md`. Suggested GitHub topics: `agent-skills`, `claude-code`, `developer-growth`, `engineering-metrics`, `git-hooks`.
 
 MIT licensed.

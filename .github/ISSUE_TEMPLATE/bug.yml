@@ -1,0 +1,18 @@
+name: Bug report
+description: Something behaves incorrectly
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes: { label: Version / commit, placeholder: v1.0.0 }
+    validations: { required: true }
+  - type: dropdown
+    id: agent
+    attributes: { label: Agent, options: [Claude Code, Cursor, Codex CLI, Gemini CLI, Other] }
+  - type: textarea
+    id: what
+    attributes: { label: What happened, and what did you expect? }
+    validations: { required: true }
+  - type: textarea
+    id: repro
+    attributes: { label: Steps to reproduce, description: "Do not paste secrets, tokens or private code." }

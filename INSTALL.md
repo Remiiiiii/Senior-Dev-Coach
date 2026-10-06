@@ -8,7 +8,7 @@ About 5 minutes. Want your AI agent to do it for you? Use [AGENT_TAKE_THE_WHEEL.
 
 1. **Clone it anywhere and leave it alone.** The clone is a template; never edit it. `git pull` updates it.
    ```bash
-   git clone https://github.com/OWNER/senior-dev-coach ~/senior-dev-coach
+   git clone https://github.com/Remiiiiii/Senior-Dev-Coach ~/senior-dev-coach
    ```
 2. **Inject it into your agent.** This links the skill into your agent's personal skills folder and creates a stable shim at `~/.senior-coach/bin/senior-coach`.
    ```bash
