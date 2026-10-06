@@ -80,7 +80,9 @@ def parse_log(repo, since):
                 a = 0 if m.group(1) == "-" else int(m.group(1))
                 d = 0 if m.group(2) == "-" else int(m.group(2))
                 files.append((_clean_path(m.group(3)), a, d))
-        commits.append({"sha": sha, "author": f"{an} <{ae}>", "ts": datetime.fromisoformat(ad),
+        # Python 3.9's fromisoformat rejects the trailing Z that git --date=iso-strict emits.
+        commits.append({"sha": sha, "author": f"{an} <{ae}>",
+                        "ts": datetime.fromisoformat(ad.replace("Z", "+00:00")),
                         "merge": len(parents.split()) > 1, "subject": subj.strip(),
                         "body": body, "files": files})
     return commits
