@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { fetch-depth: 0, persist-credentials: false }
       - name: Fetch senior-dev-coach (pinned release tag, never a moving branch)
-        env: { SDC_REF: v1.0.0 }
+        env: { SDC_REF: v1.0.01 }
         run: git clone --depth 1 --branch "$SDC_REF" https://github.com/OWNER/senior-dev-coach /tmp/sdc
       - name: Secrets and PR-size check (stateless)
         env: { BASE_REF: "${{ github.base_ref }}" }
